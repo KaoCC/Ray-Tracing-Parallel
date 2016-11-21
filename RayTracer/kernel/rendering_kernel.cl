@@ -12,7 +12,7 @@
 
 typedef struct {
 	float x, y, z; // position, also color (r,g,b)
-} Vec __attribute__ ((aligned (12)));
+} Vec;
 
 #define vinit(v, a, b, c) { (v).x = a; (v).y = b; (v).z = c; }
 #define vassign(a, b) vinit(a, (b).x, (b).y, (b).z)
@@ -372,7 +372,7 @@ static void Radiance(
 	}
 }
 
-static void GenerateCameraRay(OCL_CONSTANT_BUFFER const Camera *camera,
+static void GeneratePrimaryRay(OCL_CONSTANT_BUFFER const Camera *camera,
 		unsigned int *seed0, unsigned int *seed1,
 		const int width, const int height, const int x, const int y, Ray *ray) {
 	const float invWidth = 1.f / width;
@@ -418,7 +418,7 @@ __kernel void RadianceGPU(
 	unsigned int seed1 = seedsInput[2 * gid + 1];
 
 	Ray ray;
-	GenerateCameraRay(camera, &seed0, &seed1, width, height, scrX, scrY, &ray);
+	GeneratePrimaryRay(camera, &seed0, &seed1, width, height, scrX, scrY, &ray);
 
 	Vec r;
 	Radiance(sphere, sphereCount, &ray, &seed0, &seed1, &r);

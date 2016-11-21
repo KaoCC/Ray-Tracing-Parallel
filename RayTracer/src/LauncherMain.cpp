@@ -18,7 +18,7 @@ int main(int argc, char *argv[])
 		std::cerr << "Usage: " << argv[0] << std::endl;
 		std::cerr << "Usage: " << argv[0] << " <use CPU devices (0/1)> <use GPU devices (0/1)> \
 											 <GPU workgroup size (0=default value or anything x^2)>\
-											 <window width> <window height> <scene file>" << std::endl;
+											 <width> <height> <scene file>" << std::endl;
 
 		// It is important to initialize OpenGL before OpenCL
 		unsigned int width;
@@ -47,6 +47,10 @@ int main(int argc, char *argv[])
 	} catch (cl::Error e) {
 		std::cerr << "ERROR: " << e.what() << "[" << e.err() << "]" << std::endl;
 		return EXIT_FAILURE;
+	}
+
+	if (rtConfig) {
+		delete rtConfig;
 	}
 
 	return EXIT_SUCCESS;

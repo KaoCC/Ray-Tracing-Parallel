@@ -40,7 +40,7 @@ RayTracingConfig::~RayTracingConfig()
 
 
 void RayTracingConfig::ReadSceneFile(const std::string& fileName) {
-	fprintf(stderr, "Reading scene: %s\n", fileName);
+	fprintf(stderr, "Reading scene: %s\n", fileName.c_str());
 
 	FILE *f = fopen(fileName.c_str(), "r");
 	if (!f) {
