@@ -41,7 +41,7 @@ workspace "RayTracingParallel"
         kind "ConsoleApp"
         includedirs "RayTracer/include"
 
-        files {"RayTracer/src/**.cpp", "RayTracer/src/**.cl"}
+        files {"RayTracer/**.cpp", "RayTracer/**.hpp","RayTracer/**.cl"}
 
 
 
