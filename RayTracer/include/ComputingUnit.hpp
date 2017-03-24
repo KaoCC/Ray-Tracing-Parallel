@@ -48,7 +48,7 @@ private:
 	// Thread binding function
 	static void RenderThread(ComputingUnit *computingItem);
 
-	std::string ReadSources(const std::string &fileName);
+	std::string ReadSources(const std::string& fileName);
 	void SetKernelArgs();
 
 	void ExecuteKernel();

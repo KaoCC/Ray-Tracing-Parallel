@@ -5,6 +5,10 @@
 #include "RayTracingConfig.hpp"
 #include "Utility.hpp"
 
+
+const std::string RayTracingConfig::kDefaultKernelPath = "../RayTracer/kernel/rendering_kernel.cl";
+
+
 RayTracingConfig::RayTracingConfig(const std::string &sceneFileName, const unsigned int w,
 	const unsigned int h, const bool useCPUs, const bool useGPUs,
 	const unsigned int forceGPUWorkSize):
@@ -44,7 +48,7 @@ void RayTracingConfig::ReadSceneFile(const std::string& fileName) {
 
 	FILE *f = fopen(fileName.c_str(), "r");
 	if (!f) {
-		fprintf(stderr, "Failed to open file: %s\n", fileName);
+		fprintf(stderr, "Failed to open file: %s\n", fileName.c_str());
 		exit(-1);
 	}
 
@@ -73,7 +77,7 @@ void RayTracingConfig::ReadSceneFile(const std::string& fileName) {
 	for (unsigned int i = 0; i < sphereCount; i++) {
 		Sphere *s = &spheres[i];
 		int material;
-		int c = fscanf(f, "sphere %f  %f %f %f  %f %f %f  %f %f %f  %d\n",
+		int k = fscanf(f, "sphere %f  %f %f %f  %f %f %f  %f %f %f  %d\n",
 				&s->rad,
 				&s->p.x, &s->p.y, &s->p.z,
 				&s->e.x, &s->e.y, &s->e.z,
@@ -96,8 +100,8 @@ void RayTracingConfig::ReadSceneFile(const std::string& fileName) {
 				break;
 		}
 
-		if (c != 11) {
-			fprintf(stderr, "Failed to read sphere #%d: %d\n", i, c);
+		if (k != 11) {
+			fprintf(stderr, "Failed to read sphere #%d: %d\n", i, k);
 			exit(-1);
 		}
 	}
@@ -170,7 +174,7 @@ void RayTracingConfig::SetUpOpenCL(const bool useCPUs, const bool useGPUs,
 
 		for (size_t i = 0; i < selectedDevices.size(); ++i) {
 			computingUnits.push_back(new ComputingUnit(
-				selectedDevices[i], "rendering_kernel.cl", forceGPUWorkSize,
+				selectedDevices[i], kDefaultKernelPath, forceGPUWorkSize,
 				camera, spheres, sphereCount,
 				threadStartBarrier, threadEndBarrier));
 		}

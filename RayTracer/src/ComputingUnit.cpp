@@ -6,7 +6,7 @@
 
 #include "ComputingUnit.hpp"
 
-ComputingUnit::ComputingUnit(const cl::Device &dev, const std::string &kernelFileName,
+ComputingUnit::ComputingUnit(const cl::Device &dev, const std::string& kernelFileName,
 			const unsigned int forceGPUWorkSize,
 			Camera *camera, Sphere *spheres,
 			const unsigned int sceneSphereCount,
@@ -112,9 +112,14 @@ ComputingUnit::~ComputingUnit()
 
 std::string ComputingUnit::ReadSources(const std::string &fileName)
 {
-	std::fstream file;
+	std::ifstream file(fileName, std::fstream::binary);
+
+	if (!file) {
+		throw std::runtime_error("Could not open file");
+	}
+
 	file.exceptions(std::ifstream::eofbit | std::ifstream::failbit | std::ifstream::badbit);
-	file.open(fileName.c_str(), std::fstream::in | std::fstream::binary);
+	//file.open(fileName.c_str(), std::fstream::in | std::fstream::binary);
 
 	std::string program(std::istreambuf_iterator<char>(file), (std::istreambuf_iterator<char>()));
 	std::cerr << "[Device::" << deviceName << "] Kernel file size " << program.length() << "bytes" << std::endl;

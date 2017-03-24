@@ -79,6 +79,8 @@ private:
 	std::chrono::system_clock::time_point timeFirstWorkloadUpdate;
 	bool workLoadProfilingFlag;
 
+	static const std::string kDefaultKernelPath;
+
 };
 
 
