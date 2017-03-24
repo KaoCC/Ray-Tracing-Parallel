@@ -6,15 +6,14 @@
 
 #include "ComputingUnit.hpp"
 
-ComputingUnit::ComputingUnit(const cl::Device &dev, const std::string &kernelFileName,
-			const unsigned int forceGPUWorkSize,
-			Camera *camera, Sphere *spheres,
-			const unsigned int sceneSphereCount,
-			Barrier *startBarrier, Barrier *endBarrier):
+ComputingUnit::ComputingUnit(const cl::Device &dev, const std::string& kernelFileName,
+	const unsigned int forceGPUWorkSize,
+	Camera *camera, Sphere *spheres,
+	const unsigned int sceneSphereCount,
+	Barrier *startBarrier, Barrier *endBarrier) :
 	renderThread(nullptr), threadStartBarrier(startBarrier), threadEndBarrier(endBarrier),
 	sphereCount(sceneSphereCount), colorBuffer(nullptr), pixelBuffer(nullptr), seedBuffer(nullptr),
-	pixels(nullptr), colors(nullptr), seeds(nullptr), exeUnitCount(0.0), exeTime(0.0)
-{
+	pixels(nullptr), colors(nullptr), seeds(nullptr), exeUnitCount(0.0), exeTime(0.0) {
 
 	deviceName = dev.getInfo<CL_DEVICE_NAME >().c_str();
 
@@ -54,7 +53,7 @@ ComputingUnit::ComputingUnit(const cl::Device &dev, const std::string &kernelFil
 		std::string result = program.getBuildInfo<CL_PROGRAM_BUILD_LOG>(dev);
 		std::cerr << "[Device::" << deviceName << "]" << " Compilation result: " << result.c_str() << std::endl;
 
-	} catch(cl::Error e) {
+	} catch (cl::Error e) {
 
 		std::string strError = program.getBuildInfo<CL_PROGRAM_BUILD_LOG>(dev);
 		std::cerr << "[Device::" << deviceName << "]" << " Compilation error:" << std::endl << strError.c_str() << std::endl;
@@ -78,10 +77,10 @@ ComputingUnit::ComputingUnit(const cl::Device &dev, const std::string &kernelFil
 
 	// Create camera buffer
 	cameraBuffer = cl::Buffer(context, CL_MEM_READ_ONLY | CL_MEM_USE_HOST_PTR,
-			sizeof(Camera), camera);
-	
+		sizeof(Camera), camera);
+
 	std::cerr << "[Device::" << deviceName << "] CameraBuffer size: " << (sizeof(Camera) / 1024) << "Kb" << std::endl;
-	
+
 	sphereBuffer = cl::Buffer(context, CL_MEM_READ_ONLY | CL_MEM_USE_HOST_PTR,
 		sizeof(Sphere) * sphereCount, spheres);
 
@@ -90,8 +89,7 @@ ComputingUnit::ComputingUnit(const cl::Device &dev, const std::string &kernelFil
 
 
 
-ComputingUnit::~ComputingUnit()
-{
+ComputingUnit::~ComputingUnit() {
 	if (renderThread) {
 		//renderThread->interrupt();
 		renderThread->join();
@@ -110,11 +108,15 @@ ComputingUnit::~ComputingUnit()
 }
 
 
-std::string ComputingUnit::ReadSources(const std::string &fileName)
-{
-	std::fstream file;
+std::string ComputingUnit::ReadSources(const std::string &fileName) {
+	std::ifstream file(fileName, std::fstream::binary);
+
+	if (!file) {
+		throw std::runtime_error("Could not open file");
+	}
+
 	file.exceptions(std::ifstream::eofbit | std::ifstream::failbit | std::ifstream::badbit);
-	file.open(fileName.c_str(), std::fstream::in | std::fstream::binary);
+	//file.open(fileName.c_str(), std::fstream::in | std::fstream::binary);
 
 	std::string program(std::istreambuf_iterator<char>(file), (std::istreambuf_iterator<char>()));
 	std::cerr << "[Device::" << deviceName << "] Kernel file size " << program.length() << "bytes" << std::endl;
@@ -122,8 +124,7 @@ std::string ComputingUnit::ReadSources(const std::string &fileName)
 	return program;
 }
 
-void ComputingUnit::SetArgs(const unsigned int count) 
-{
+void ComputingUnit::SetArgs(const unsigned int count) {
 	currentSample = count;
 }
 
@@ -147,44 +148,36 @@ void ComputingUnit::RenderThread(ComputingUnit *computingItem) {
 
 
 
-const std::string& ComputingUnit::GetDeviceName() const
-{
+const std::string& ComputingUnit::GetDeviceName() const {
 	return deviceName;
 }
 
-double ComputingUnit::GetPerformance() const 
-{
+double ComputingUnit::GetPerformance() const {
 	return ((exeTime == 0.0) || (exeUnitCount == 0.0)) ? 1.0 : (exeUnitCount / exeTime);
 }
 
-unsigned int ComputingUnit::GetWorkOffset() const 
-{
-	return workOffset; 
+unsigned int ComputingUnit::GetWorkOffset() const {
+	return workOffset;
 }
 
-size_t ComputingUnit::GetWorkAmount() const 
-{
-	return workAmount; 
+size_t ComputingUnit::GetWorkAmount() const {
+	return workAmount;
 }
 
-void ComputingUnit::UpdateCameraBuffer(Camera *camera)
-{
+void ComputingUnit::UpdateCameraBuffer(Camera *camera) {
 	queue.enqueueWriteBuffer(cameraBuffer, CL_FALSE, 0, sizeof(Camera), camera);
 }
 
-void ComputingUnit::UpdateSceneBuffer(Sphere *spheres)
-{
+void ComputingUnit::UpdateSceneBuffer(Sphere *spheres) {
 	queue.enqueueWriteBuffer(sphereBuffer, CL_FALSE, 0, sizeof(Sphere) * sphereCount, spheres);
 }
 
-void ComputingUnit::Finish()
-{
+void ComputingUnit::Finish() {
 	queue.finish();
 }
 
 
-void ComputingUnit::SetKernelArgs()
-{
+void ComputingUnit::SetKernelArgs() {
 	kernel.setArg(0, colorBuffer);
 	kernel.setArg(1, seedBuffer);
 	kernel.setArg(2, sphereBuffer);
@@ -199,9 +192,8 @@ void ComputingUnit::SetKernelArgs()
 }
 
 void ComputingUnit::SetWorkLoad(const unsigned int offset, const unsigned int amount,
-		const unsigned int screenWidth,	const unsigned int screenHeght,
-		unsigned int *screenPixels)
-{
+	const unsigned int screenWidth, const unsigned int screenHeght,
+	unsigned int *screenPixels) {
 
 	if (colors)
 		delete[] colors;
@@ -216,7 +208,7 @@ void ComputingUnit::SetWorkLoad(const unsigned int offset, const unsigned int am
 	pixels = screenPixels;
 
 	std::cerr << "[Device::" << deviceName << "] ";
-	std::cerr << "Offset: " <<workOffset << " Amount: " << workAmount << std::endl;
+	std::cerr << "Offset: " << workOffset << " Amount: " << workAmount << std::endl;
 
 	colors = new Vec[workAmount];
 	colorBuffer = cl::Buffer(context, CL_MEM_READ_WRITE | CL_MEM_USE_HOST_PTR,
@@ -245,14 +237,12 @@ void ComputingUnit::SetWorkLoad(const unsigned int offset, const unsigned int am
 	currentSample = 0;
 }
 
-void ComputingUnit::ReadPixelBuffer() 
-{
+void ComputingUnit::ReadPixelBuffer() {
 	queue.enqueueReadBuffer(pixelBuffer, CL_FALSE, 0, sizeof(unsigned int) * workAmount, &pixels[workOffset]);
 }
 
 
-void ComputingUnit::ExecuteKernel()
-{
+void ComputingUnit::ExecuteKernel() {
 	size_t w = workAmount;
 	if (w % workGroupSize != 0) {
 		w = (w / workGroupSize + 1) * workGroupSize;
@@ -266,8 +256,7 @@ void ComputingUnit::ExecuteKernel()
 	exeUnitCount += workAmount;
 }
 
-void ComputingUnit::FinishExecuteKernel()
-{
+void ComputingUnit::FinishExecuteKernel() {
 	kernelExecutionTime.wait();
 
 	// Check kernel execution time
