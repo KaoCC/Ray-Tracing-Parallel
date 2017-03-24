@@ -45,9 +45,9 @@ static void UpdateRendering() {
 	const double sampleSec = samples * rtConfig->height * rtConfig->width / elapsedTime;
 
 	sprintf(rtConfig->captionBuffer, "[Rendering time %.3f sec (pass %d)][Avg. sample/sec %.1fK][Instant sample/sec %.1fK]",
-			elapsedTime, rtConfig->currentSample,
-			(rtConfig->currentSample) * (rtConfig->height) * (rtConfig->width) / totalElapsedTime / 1000.f,
-			sampleSec / 1000.f);
+		elapsedTime, rtConfig->currentSample,
+		(rtConfig->currentSample) * (rtConfig->height) * (rtConfig->width) / totalElapsedTime / 1000.f,
+		sampleSec / 1000.f);
 }
 
 static void PrintString(void *font, const std::string& str) {
@@ -113,15 +113,15 @@ static void PrintHelpAndItems() {
 	for (size_t i = 0; i < computingUnits.size(); ++i) {
 
 		sprintf(buff, "[%s][Perf. Idx %.2f][Assigned Idx %.2f][Workload %.1f%%]", computingUnits[i]->GetDeviceName().c_str(),
-				computingUnits[i]->GetPerformance() / minPerf,
+			computingUnits[i]->GetPerformance() / minPerf,
 			rtConfig->GetPerformanceIndex(i) / totalPerf,
-				100.0 * computingUnits[i]->GetWorkAmount() / totalAmount);
+			100.0 * computingUnits[i]->GetWorkAmount() / totalAmount);
 
 		// Check if it is the selected device
 		if (i == rtConfig->selectedDevice) {
-				glColor3f(0.f, 0.f, 1.f);
-				glRecti(10, offset - 5, 630, offset + 10);
-				glColor3f(1.0f, 0.5f, 0.f);
+			glColor3f(0.f, 0.f, 1.f);
+			glRecti(10, offset - 5, 630, offset + 10);
+			glColor3f(1.0f, 0.5f, 0.f);
 		}
 
 		glRasterPos2i(15, offset);
@@ -174,18 +174,18 @@ static void displayFunc(void) {
 			const int end = (computingUnits[i]->GetWorkOffset() + computingUnits[i]->GetWorkAmount()) / rtConfig->width;
 
 			switch (i % 4) {
-				case 0:
-					glColor3f(1.f, 0.f, 0.f);
-					break;
-				case 1:
-					glColor3f(0.f, 1.f, 0.f);
-					break;
-				case 2:
-					glColor3f(0.f, 0.f, 1.f);
-					break;
-				case 3:
-					glColor3f(1.f, 1.f, 0.f);
-					break;
+			case 0:
+				glColor3f(1.f, 0.f, 0.f);
+				break;
+			case 1:
+				glColor3f(0.f, 1.f, 0.f);
+				break;
+			case 2:
+				glColor3f(0.f, 0.f, 1.f);
+				break;
+			case 3:
+				glColor3f(1.f, 1.f, 0.f);
+				break;
 			}
 			glRecti(0, start, 10, end);
 			glBegin(GL_LINES);
@@ -232,10 +232,8 @@ void reshapeFunc(int newWidth, int newHeight) {
 }
 
 
-void OnMouseMove(int x, int y)
-{
-	if (isMouseTracking)
-	{
+void OnMouseMove(int x, int y) {
+	if (isMouseTracking) {
 		//std::string tmp = " OnMouseMove: " + std::to_string(x) + " " + std::to_string(y);
 
 		//std::cerr << tmp << " original: " 
@@ -280,17 +278,12 @@ void OnMouseMove(int x, int y)
 	}
 }
 
-void OnMouseButton(int btn, int state, int x, int y)
-{
-	if (btn == GLUT_LEFT_BUTTON)
-	{
-		if (state == GLUT_DOWN)
-		{
+void OnMouseButton(int btn, int state, int x, int y) {
+	if (btn == GLUT_LEFT_BUTTON) {
+		if (state == GLUT_DOWN) {
 			isMouseTracking = true;
 			mousePos = std::make_pair(x, y);
-		}
-		else if (state == GLUT_UP && isMouseTracking)
-		{
+		} else if (state == GLUT_UP && isMouseTracking) {
 			isMouseTracking = true;
 		}
 	}
@@ -314,8 +307,8 @@ void InitGlut(int argc, char *argv[], unsigned int width, unsigned int height) {
 
 void RunGlut() {
 	glutReshapeFunc(reshapeFunc);
-//	glutKeyboardFunc(keyFunc);
-//	glutSpecialFunc(specialFunc);
+	//	glutKeyboardFunc(keyFunc);
+	//	glutSpecialFunc(specialFunc);
 	glutDisplayFunc(displayFunc);
 	glutMouseFunc(OnMouseButton);
 	glutMotionFunc(OnMouseMove);
