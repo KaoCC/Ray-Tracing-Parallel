@@ -12,8 +12,7 @@
 #include "DisplayProcedure.hpp"
 
 
-int main(int argc, char *argv[])
-{
+int main(int argc, char *argv[]) {
 	try {
 		std::cerr << "Usage: " << argv[0] << std::endl;
 		std::cerr << "Usage: " << argv[0] << " <use CPU devices (0/1)> <use GPU devices (0/1)> \
@@ -36,7 +35,7 @@ int main(int argc, char *argv[])
 
 		if (argc == 7)
 			rtConfig = new RayTracingConfig(argv[6], width, height,
-					(atoi(argv[1]) == 1), (atoi(argv[2]) == 1), atoi(argv[3]));
+			(atoi(argv[1]) == 1), (atoi(argv[2]) == 1), atoi(argv[3]));
 		else if (argc == 1)
 			rtConfig = new RayTracingConfig("../Scene/cornell_test.scn", width, height, true, true, 0);
 		else

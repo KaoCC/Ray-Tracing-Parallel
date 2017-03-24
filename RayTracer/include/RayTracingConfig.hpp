@@ -22,10 +22,10 @@
 class RayTracingConfig {
 
 public:
-	RayTracingConfig(const std::string &sceneFileName, const unsigned int w,
+	RayTracingConfig(const std::string& sceneFileName, const unsigned int w,
 		const unsigned int h, const bool useCPUs, const bool useGPUs,
 		const unsigned int forceGPUWorkSize);
-	
+
 	~RayTracingConfig();
 
 
@@ -34,7 +34,7 @@ public:
 
 	void Execute();
 
-	
+
 	const bool IsProfiling() const;
 	const std::vector<ComputingUnit *>& GetComputingItem() const;
 
@@ -47,13 +47,13 @@ public:
 	unsigned int selectedDevice;
 	char captionBuffer[512];
 
-	unsigned int width { 800 };
-	unsigned int height { 600 };
-	unsigned int currentSample {0};
-	unsigned int *pixels {nullptr};
+	unsigned int width{ kDefaultWidth };
+	unsigned int height{ kDefaultHeight };
+	unsigned int currentSample{ 0 };
+	unsigned int *pixels{ nullptr };
 
-	Camera *camera {nullptr};
-	Sphere *spheres {nullptr};
+	Camera *camera{ nullptr };
+	Sphere *spheres{ nullptr };
 	unsigned int sphereCount;
 	int currentSphere;
 
@@ -72,14 +72,16 @@ private:
 
 	std::vector<ComputingUnit *> computingUnits;
 	std::vector<double> computingUnitsPerfIndex;
-	Barrier *threadStartBarrier {nullptr};
-	Barrier *threadEndBarrier {nullptr};
+	Barrier *threadStartBarrier{ nullptr };
+	Barrier *threadEndBarrier{ nullptr };
 
 
 	std::chrono::system_clock::time_point timeFirstWorkloadUpdate;
 	bool workLoadProfilingFlag;
 
 	static const std::string kDefaultKernelPath;
+	static const unsigned int kDefaultWidth;
+	static const unsigned int kDefaultHeight;
 
 };
 

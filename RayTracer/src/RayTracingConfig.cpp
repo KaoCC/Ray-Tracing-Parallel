@@ -7,14 +7,15 @@
 
 
 const std::string RayTracingConfig::kDefaultKernelPath = "../RayTracer/kernel/rendering_kernel.cl";
+const unsigned int RayTracingConfig::kDefaultWidth = 800;
+const unsigned int RayTracingConfig::kDefaultHeight = 600;
 
 
 RayTracingConfig::RayTracingConfig(const std::string &sceneFileName, const unsigned int w,
 	const unsigned int h, const bool useCPUs, const bool useGPUs,
-	const unsigned int forceGPUWorkSize):
+	const unsigned int forceGPUWorkSize) :
 	selectedDevice(0), width(w), height(h), currentSample(0),
-		threadStartBarrier(nullptr), threadEndBarrier(nullptr)
-{
+	threadStartBarrier(nullptr), threadEndBarrier(nullptr) {
 	captionBuffer[0] = 0;
 	computingUnitsPerfIndex.resize(computingUnits.size(), 1.f);
 
@@ -26,8 +27,7 @@ RayTracingConfig::RayTracingConfig(const std::string &sceneFileName, const unsig
 	timeFirstWorkloadUpdate = std::chrono::system_clock::now();
 }
 
-RayTracingConfig::~RayTracingConfig()
-{
+RayTracingConfig::~RayTracingConfig() {
 	//delete all compting units
 	for (size_t i = 0; i < computingUnits.size(); ++i)
 		delete computingUnits[i];
@@ -55,8 +55,8 @@ void RayTracingConfig::ReadSceneFile(const std::string& fileName) {
 	/* Read the camera position */
 	camera = new Camera();
 	int c = fscanf(f, "camera %f %f %f  %f %f %f\n",
-			&camera->orig.x, &camera->orig.y, &camera->orig.z,
-			&camera->target.x, &camera->target.y, &camera->target.z);
+		&camera->orig.x, &camera->orig.y, &camera->orig.z,
+		&camera->target.x, &camera->target.y, &camera->target.z);
 	if (c != 6) {
 		fprintf(stderr, "Failed to read 6 camera parameters: %d\n", c);
 		exit(-1);
@@ -78,26 +78,26 @@ void RayTracingConfig::ReadSceneFile(const std::string& fileName) {
 		Sphere *s = &spheres[i];
 		int material;
 		int k = fscanf(f, "sphere %f  %f %f %f  %f %f %f  %f %f %f  %d\n",
-				&s->rad,
-				&s->p.x, &s->p.y, &s->p.z,
-				&s->e.x, &s->e.y, &s->e.z,
-				&s->c.x, &s->c.y, &s->c.z,
-				&material);
+			&s->rad,
+			&s->p.x, &s->p.y, &s->p.z,
+			&s->e.x, &s->e.y, &s->e.z,
+			&s->c.x, &s->c.y, &s->c.z,
+			&material);
 
 		switch (material) {
-			case 0:
-				s->refl = DIFFuse;
-				break;
-			case 1:
-				s->refl = SPECular;
-				break;
-			case 2:
-				s->refl = REFRactive;
-				break;
-			default:
-				fprintf(stderr, "Failed to parse material type for sphere #%d: %d\n", i, material);
-				exit(-1);
-				break;
+		case 0:
+			s->refl = DIFFuse;
+			break;
+		case 1:
+			s->refl = SPECular;
+			break;
+		case 2:
+			s->refl = REFRactive;
+			break;
+		default:
+			fprintf(stderr, "Failed to parse material type for sphere #%d: %d\n", i, material);
+			exit(-1);
+			break;
 		}
 
 		if (k != 11) {
@@ -110,14 +110,13 @@ void RayTracingConfig::ReadSceneFile(const std::string& fileName) {
 }
 
 void RayTracingConfig::SetUpOpenCL(const bool useCPUs, const bool useGPUs,
-	const unsigned int forceGPUWorkSize)
-{
+	const unsigned int forceGPUWorkSize) {
 	// Platform information
 	std::vector<cl::Platform> platforms;
 	cl::Platform::get(&platforms);
 	for (size_t i = 0; i < platforms.size(); ++i)
 		std::cerr << "OpenCL Platform " << i << " : " <<
-			platforms[i].getInfo<CL_PLATFORM_VENDOR>().c_str() << std::endl;
+		platforms[i].getInfo<CL_PLATFORM_VENDOR>().c_str() << std::endl;
 
 	if (platforms.size() == 0)
 		throw std::runtime_error("Unable to find an appropiate OpenCL platform");
@@ -134,34 +133,34 @@ void RayTracingConfig::SetUpOpenCL(const bool useCPUs, const bool useGPUs,
 	for (size_t i = 0; i < devices.size(); ++i) {
 		cl_int type = devices[i].getInfo<CL_DEVICE_TYPE>();
 		std::cerr << "OpenCL Device name " << i << " : " <<
-				devices[i].getInfo<CL_DEVICE_NAME>().c_str() << std::endl;
+			devices[i].getInfo<CL_DEVICE_NAME>().c_str() << std::endl;
 
 		std::string stype;
 		switch (type) {
-			case CL_DEVICE_TYPE_ALL:
-				stype = "TYPE_ALL";
-				break;
-			case CL_DEVICE_TYPE_DEFAULT:
-				stype = "TYPE_DEFAULT";
-				break;
-			case CL_DEVICE_TYPE_CPU:
-				stype = "TYPE_CPU";
-				if (useCPUs)
-					selectedDevices.push_back(devices[i]);
-				break;
-			case CL_DEVICE_TYPE_GPU:
-				stype = "TYPE_GPU";
-				if (useGPUs)
-					selectedDevices.push_back(devices[i]);
-				break;
-			default:
-				stype = "TYPE_UNKNOWN";
-				break;
+		case CL_DEVICE_TYPE_ALL:
+			stype = "TYPE_ALL";
+			break;
+		case CL_DEVICE_TYPE_DEFAULT:
+			stype = "TYPE_DEFAULT";
+			break;
+		case CL_DEVICE_TYPE_CPU:
+			stype = "TYPE_CPU";
+			if (useCPUs)
+				selectedDevices.push_back(devices[i]);
+			break;
+		case CL_DEVICE_TYPE_GPU:
+			stype = "TYPE_GPU";
+			if (useGPUs)
+				selectedDevices.push_back(devices[i]);
+			break;
+		default:
+			stype = "TYPE_UNKNOWN";
+			break;
 		}
 
 		std::cerr << "OpenCL Device type " << i << ": " << stype << std::endl;
 		std::cerr << "OpenCL Device units " << i << ": " <<
-				devices[i].getInfo<CL_DEVICE_MAX_COMPUTE_UNITS>() << std::endl;
+			devices[i].getInfo<CL_DEVICE_MAX_COMPUTE_UNITS>() << std::endl;
 	}
 
 	if (selectedDevices.size() == 0)
@@ -185,7 +184,7 @@ void RayTracingConfig::SetUpOpenCL(const bool useCPUs, const bool useGPUs,
 		std::cerr << std::endl;
 	}
 
-	std::cerr << "Create done, width: " << width << ", heigh: " <<height << std::endl;
+	std::cerr << "Create done, width: " << width << ", heigh: " << height << std::endl;
 
 	pixels = new unsigned int[width * height];
 
@@ -199,8 +198,7 @@ void RayTracingConfig::SetUpOpenCL(const bool useCPUs, const bool useGPUs,
 }
 
 
-void RayTracingConfig::ReInitScene()
-{
+void RayTracingConfig::ReInitScene() {
 	// Flush everything
 	for (size_t i = 0; i < computingUnits.size(); ++i)
 		computingUnits[i]->Finish();
@@ -213,8 +211,7 @@ void RayTracingConfig::ReInitScene()
 }
 
 
-void RayTracingConfig::ReInit(const bool reallocBuffers)
-{
+void RayTracingConfig::ReInit(const bool reallocBuffers) {
 	// Flush everything
 	for (size_t i = 0; i < computingUnits.size(); ++i)
 		computingUnits[i]->Finish();
@@ -238,8 +235,7 @@ void RayTracingConfig::ReInit(const bool reallocBuffers)
 }
 
 
-void RayTracingConfig::Execute()
-{
+void RayTracingConfig::Execute() {
 	// Run the kernels
 	if (currentSample < 10000) {
 
@@ -267,21 +263,19 @@ void RayTracingConfig::Execute()
 	CheckDeviceWorkload();
 }
 
-const bool RayTracingConfig::IsProfiling() const 
-{
+const bool RayTracingConfig::IsProfiling() const {
 	return workLoadProfilingFlag;
 }
 
 
-void RayTracingConfig::UpdateCamera()
-{
+void RayTracingConfig::UpdateCamera() {
 	camera->dir = camera->target - camera->orig;
 	camera->dir.norm();
 
 	const Vec up(0, 1, 0);
 	const float fov = (FLOAT_PI / 180.f) * 45.f;
 
-	camera->x =  camera->dir.cross(up);
+	camera->x = camera->dir.cross(up);
 	camera->x.norm();
 	camera->x = camera->x * (width * fov / height);
 
@@ -294,14 +288,12 @@ void RayTracingConfig::UpdateCamera()
 		computingUnits[i]->UpdateCameraBuffer(camera);
 }
 
-const std::vector<ComputingUnit *>& RayTracingConfig::GetComputingItem() const
-{
+const std::vector<ComputingUnit *>& RayTracingConfig::GetComputingItem() const {
 	return computingUnits;
 }
 
 
-void RayTracingConfig::ExecuteKernels()
-{
+void RayTracingConfig::ExecuteKernels() {
 	for (size_t i = 0; i < computingUnits.size(); ++i)
 		computingUnits[i]->SetArgs(currentSample);
 
@@ -312,8 +304,7 @@ void RayTracingConfig::ExecuteKernels()
 	threadEndBarrier->wait();
 }
 
-void RayTracingConfig::CheckDeviceWorkload()
-{
+void RayTracingConfig::CheckDeviceWorkload() {
 	// Check if needed to update the device workload
 	auto t = std::chrono::system_clock::now();
 	double d = std::chrono::duration_cast<std::chrono::duration<double>>(t - timeFirstWorkloadUpdate).count();
@@ -324,13 +315,11 @@ void RayTracingConfig::CheckDeviceWorkload()
 	}
 }
 
-const double RayTracingConfig::GetPerformanceIndex(size_t index) const
-{
+const double RayTracingConfig::GetPerformanceIndex(size_t index) const {
 	return computingUnitsPerfIndex[index];
 }
 
-void RayTracingConfig::UpdateDeviceWorkload(bool calculateNewLoad)
-{
+void RayTracingConfig::UpdateDeviceWorkload(bool calculateNewLoad) {
 	if (calculateNewLoad) {
 		// Define how to split the workload
 		computingUnitsPerfIndex.resize(computingUnits.size(), 1.f);

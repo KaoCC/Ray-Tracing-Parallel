@@ -19,11 +19,11 @@ class ComputingUnit {
 
 public:
 
-	ComputingUnit(const cl::Device &dev, const std::string &kernelFileName,
+	ComputingUnit(const cl::Device& dev, const std::string& kernelFileName,
 			const unsigned int forceGPUWorkSize,
-			Camera *camera, Sphere *spheres,
+			Camera* camera, Sphere* spheres,
 			const unsigned int sceneSphereCount,
-			Barrier *startBarrier, Barrier *endBarrier);
+			Barrier* startBarrier, Barrier* endBarrier);
 	~ComputingUnit();
 
 	void SetArgs(const unsigned int count);
